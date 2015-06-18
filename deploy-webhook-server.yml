@@ -1,0 +1,21 @@
+---
+- hosts: recurseheroku
+  remote_user: root
+
+
+  tasks:
+
+  # TODO fix with a proper build
+    - name: Recompile server
+      local_action: command chdir=webhook-server go build
+
+    - name: Copy server binary to remote server
+      synchronize: src=webhook-server/webhook-server dest=/root
+
+    - name: Copy Upstart script to remote server
+      synchronize: src=webhook-server/webhook-server.conf dest=/etc/init/
+          
+    - name: Start remote service
+      service: name=webhook-server state=reloaded
+
+

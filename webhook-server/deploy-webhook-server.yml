@@ -1,0 +1,9 @@
+---
+- hosts: recurseheroku
+  remote_user: root
+
+  tasks:
+
+
+  # TODO fix with a proper build
+  - name: Recompile Go
