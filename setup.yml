@@ -2,8 +2,8 @@
 - hosts: recurseheroku
   remote_user: root
   vars:
-    dokku_checkout: 0.3.13
-    dokku_tag: v0.3.13
+    dokku_checkout: 0.3.15
+    dokku_tag: v0.3.15
 
 
   tasks:
