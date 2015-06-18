@@ -45,9 +45,6 @@
   - name: Copy systemd service file
     synchronize: src=dokku-redeploy.service dest=/etc/systemd/system/dokku-redeploy.service
 
-  - name: Reload systemd daemon
-    command: systemctl daemon-reload
-
   - name: Install dokku
     apt: pkg=dokku={{dokku_checkout}}
 
