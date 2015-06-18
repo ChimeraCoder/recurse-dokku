@@ -1,0 +1,57 @@
+---
+- hosts: recurseheroku
+  remote_user: root
+  vars:
+    dokku_checkout: 0.3.13
+    dokku_tag: v0.3.13
+
+
+  tasks:
+
+  - name: Add the docker PGP key
+    apt_key: url="https://get.docker.io/gpg" state=present
+
+  - name: Add the PackageCloud PGP key
+    apt_key: url="https://packagecloud.io/gpg.key" state=present
+
+
+  # This must be done before trying to add any repository that uses SSL
+  - name: Install apt-transport-https
+    apt: pkg=apt-transport-https state=installed
+
+  - name: Add Docker apt repository
+    apt_repository: repo='deb http://get.docker.io/ubuntu docker main' state=present
+
+  - name: Add PackageCloud (Dokku) apt repository
+    apt_repository: repo='deb https://packagecloud.io/dokku/dokku/ubuntu/ trusty main' state=present
+
+  - name: Update apt cache
+    apt: update_cache=yes
+
+  - name: Install required packages
+    apt: pkg={{item}} state=installed
+    with_items:
+      - python-software-properties
+      - git
+      - make
+      - software-properties-common
+      - apt-transport-https
+      - sudo
+
+  # This may take about 5 minutes
+  - name: Installl buildstep
+    apt: pkg=buildstep state=installed
+
+  - name: Copy systemd service file
+    synchronize: src=dokku-redeploy.service dest=/etc/systemd/system/dokku-redeploy.service
+
+  - name: Reload systemd daemon
+    command: systemctl daemon-reload
+
+  - name: Install dokku
+    apt: pkg=dokku={{dokku_checkout}}
+
+  - name: Enable and restart Dokku
+    service: name=dokku-redeploy state=restarted enabled=yes
+
+

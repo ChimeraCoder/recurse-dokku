@@ -8,17 +8,10 @@
 set -eo pipefail
 export DEBIAN_FRONTEND=noninteractive
 export DOKKU_REPO=${DOKKU_REPO:-"https://github.com/progrium/dokku.git"}
-
-if ! command -v apt-get &>/dev/null; then
-  echo "This installation script requires apt-get. For manual installation instructions, consult http://progrium.viewdocs.io/dokku/advanced-installation ."
-  exit 1
-fi
-
-apt-get update
-[[ $(lsb_release -sr) == "12.04" ]] && apt-get install -qq -y python-software-properties
+export DOKKU_TAG="v0.3.18"
+export DOKKU_CHECKOUT="0.3.18"
 
 dokku_install_source() {
-  apt-get install -qq -y git make software-properties-common
   cd /root
   if [ ! -d /root/dokku ]; then
     git clone $DOKKU_REPO /root/dokku
@@ -31,15 +24,10 @@ dokku_install_source() {
 }
 
 dokku_install_package() {
-  curl --silent https://get.docker.io/gpg 2> /dev/null | apt-key add - > /dev/null 2>&1
-  curl --silent https://packagecloud.io/gpg.key 2> /dev/null | apt-key add - > /dev/null 2>&1
-
   echo "deb http://get.docker.io/ubuntu docker main" > /etc/apt/sources.list.d/docker.list
   echo "deb https://packagecloud.io/dokku/dokku/ubuntu/ trusty main" > /etc/apt/sources.list.d/dokku.list
 
-  sudo apt-get update > /dev/null
-  sudo apt-get install -qq -y "linux-image-extra-$(uname -r)" apt-transport-https
-
+  echo "DOKKU_CHECKOUT $DOKKU_CHECKOUT"
   if [[ -n $DOKKU_CHECKOUT ]]; then
     sudo apt-get install -qq -y dokku=$DOKKU_CHECKOUT
   else
@@ -56,6 +44,7 @@ elif [[ -n $DOKKU_TAG ]]; then
   minor=$(echo $DOKKU_SEMVER | awk '{split($0,a,"."); print a[2]}')
   patch=$(echo $DOKKU_SEMVER | awk '{split($0,a,"."); print a[3]}')
 
+  echo "reached1"
   # 0.3.13 was the first version with a debian package
   if [[ "$major" -eq "0" ]] && [[ "$minor" -lt "4" ]] && [[ "$patch" -lt "13" ]]; then
     export DOKKU_CHECKOUT="$DOKKU_TAG"
